@@ -51,9 +51,10 @@ void BaseApplication::run() {
 	while (currTime = glfwGetTime(),
 		update((float)(currTime - prevTime))) {
 
-		glfwPollEvents();
+		
 		draw();
 		glfwSwapBuffers(m_window);
+		glfwPollEvents();
 
 		prevTime = currTime;
 	}
