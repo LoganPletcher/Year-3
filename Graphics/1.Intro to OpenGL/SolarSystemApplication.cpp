@@ -66,7 +66,8 @@ bool SolarSystemApplication::generateGrid()
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 	return true;
 }
 
@@ -121,6 +122,98 @@ bool SolarSystemApplication::createShader()
 
 }
 
+std::vector<glm::vec4> SolarSystemApplication::makeSphere(std::vector<glm::vec4> vertices, int meridians, int points)
+{
+	float phi;
+	for (int i = 0; i <= meridians; i++)
+	{
+		phi = 2 * 3.14159  * (i / meridians);
+		for (int j = 0; j < points; j++)
+		{
+			float newX = vertices[j].x;
+			float newY = (vertices[j].y * cos(phi)) - (vertices[j].z * sin(phi));
+			float newZ = (vertices[j].z * sin(phi)) + (vertices[j].y * cos(phi));
+			vertices.push_back(vec4(newX, newY, newZ, 1));
+		}
+	}
+	return vertices;
+}
+
+std::vector<glm::vec4> SolarSystemApplication::makeHalfCircle(int points, float radius)
+{
+	std::vector<glm::vec4> v;
+	float theta;
+	for (int i = 0; i < points; i++)
+	{
+		theta = 3.14159 * i / (points - 1);
+		float newX = radius * sin(theta);
+		float newY = radius * cos(theta);
+		v.push_back(vec4(newX, newY, 0.f, 1));
+	}
+	return v;
+}
+
+bool SolarSystemApplication::generateSphere()
+{
+	std::vector<vec4> halfCirc = makeHalfCircle(5,5.f);
+	std::vector<vec4> fullCirc = makeSphere(halfCirc, 25, 5);
+	std::vector<unsigned int> indices = GenerateIndices(25, 5);
+
+	glGenBuffers(1, &m_VBO);
+	glGenBuffers(1, &m_IBO);
+
+
+	glGenVertexArrays(1, &m_VAO);
+	glBindVertexArray(m_VAO);
+
+
+	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+	glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(vec4), fullCirc.data(), GL_STATIC_DRAW);
+
+
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+
+
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	return true;
+}
+
+std::vector<unsigned int> SolarSystemApplication::GenerateIndices(int meridians, int points)
+{
+	std::vector<unsigned int> indices;
+	//j=np-1
+	//      
+	//2   5   8   11  14  17
+	//1   4   7   10  13  16
+	//0   3   6   9   12  15      
+	//  
+	for (unsigned int i = 0; i < meridians; i++) //nm = 4
+	{
+		unsigned int start = i * points;
+		for (int j = 0; j < points; j++) //np = 3
+		{
+			unsigned int botR = (start + points + j);
+			unsigned int botL = (start + j);
+			indices.push_back(botL);
+			indices.push_back(botR);
+		}
+		indices.push_back(0xFFFF);
+	} //we copied the origin whenever we rotated around nm + 1 times so we dont need to get the end again
+	return indices;
+}
+
 bool SolarSystemApplication::startup() {
 
 	// create a basic window
@@ -133,9 +226,8 @@ bool SolarSystemApplication::startup() {
 	m_camera = new Camera(glm::pi<float>() * 0.25f, 16 / 9.f, 0.1f, 1000.f);
 	m_camera->setLookAtFrom(vec3(10, 10, 10), vec3(0));
 
-
-
-	generateGrid();
+	generateSphere();
+	//generateGrid();
 	createShader();
 	// set input callback
 	setInputCallback(inputCallback);

@@ -4,6 +4,7 @@
 
 
 #include <glm/vec4.hpp>
+#include <vector>
 
 // forward declared to reduce dependencies
 class Camera;
@@ -20,8 +21,10 @@ public:
 	virtual ~SolarSystemApplication();
 	bool generateGrid();
 	bool createShader();
-	void drawSphere(float, float, float);
-	void drawHalfCircle(float, Vertex);
+	std::vector<glm::vec4> makeSphere(std::vector<glm::vec4>, int, int);
+	std::vector<glm::vec4> makeHalfCircle(int, float);
+	bool generateSphere();
+	std::vector<unsigned int> GenerateIndices(int, int);
 	virtual bool startup();
 	virtual void shutdown();
 
@@ -33,10 +36,9 @@ public:
 private:
 	
 	Camera*	m_camera;
-
 	// we can toggle the way the earth orbits the sun,
 	// demonstating input callback
-	bool		m_direction;
+	bool m_direction;
 	// our vertex and index buffers
 	unsigned int m_VAO;
 	unsigned int m_VBO;
