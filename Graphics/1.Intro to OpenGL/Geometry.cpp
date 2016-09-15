@@ -96,7 +96,7 @@ bool Geometry::createShader()
 							float d = max(0, \
 							dot( normalize(vNormal.xyz), \
 							vec3(0,1,0) ) ); \
-							FragColor = vec4(1,0,.5,1); }";
+							FragColor = vec4(1*d,0*d,.5*d,1); }";
 
 
 	int success = GL_FALSE;
