@@ -141,6 +141,7 @@
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="Geometry.cpp" />
     <ClCompile Include="SolarSystemApplication.cpp" />
+    <ClCompile Include="TXTFileReader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\BaseApplication.h" />
@@ -149,6 +150,7 @@
     <ClInclude Include="..\src\gl_core_4_4.h" />
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="SolarSystemApplication.h" />
+    <ClInclude Include="TXTFileReader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

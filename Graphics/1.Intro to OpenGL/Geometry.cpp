@@ -6,6 +6,7 @@
 #include <glm/ext.hpp>
 
 #include "Camera.h"
+#include "TXTFileReader.h"
 //	                                   _._
 //	                              _.-="_-         _
 //	                         _.-="   _-          | ||"""""""---._______     __..
@@ -80,23 +81,28 @@ bool Geometry::generateGrid()
 
 bool Geometry::createShader()
 {
+	txtfilereader sourceData = txtfilereader();
 	// create shader
-	const char* vsSource = "#version 410\n \
-							layout(location=0) in vec4 Position; \
-							layout(location=1) in vec4 Colour; \
-							out vec4 vColour; \
-							uniform mat4 ProjectionViewWorldMatrix; \
-							void main() { vColour = Colour; \
-							gl_Position = ProjectionViewWorldMatrix * Position; }";
-
-	const char* fsSource = "#version 410\n \
-							in vec4 vNormal; \
-							out vec4 FragColor; \
-							void main() { \
-							float d = max(0, \
-							dot( normalize(vNormal.xyz), \
-							vec3(0,1,0) ) ); \
-							FragColor = vec4(1*d,0*d,.5*d,1); }";
+	//const char* vsSource = "#version 410\n \
+	//						layout(location=0) in vec4 Position; \
+	//						layout(location=1) in vec4 Colour; \
+	//						out vec4 vColour; \
+	//						uniform mat4 ProjectionViewWorldMatrix; \
+	//						void main() { vColour = Colour; \
+	//						gl_Position = ProjectionViewWorldMatrix * Position; }";
+	
+	std::string stringvsSource = sourceData.loadFile("vsSource.txt");
+	const char* vsSource = stringvsSource.c_str();
+	std::string stringfsSource = sourceData.loadFile("fsSource.txt");
+	const char* fsSource = stringfsSource.c_str();
+	//const char* fsSource = "#version 410\n \
+	//						in vec4 vNormal; \
+	//						out vec4 FragColor; \
+	//						void main() { \
+	//						float d = max(0, \
+	//						dot( normalize(vNormal.xyz), \
+	//						vec3(0,1,0) ) ); \
+	//						FragColor = vec4(1,0,1,1); }";
 
 
 	int success = GL_FALSE;
