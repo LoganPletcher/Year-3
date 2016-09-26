@@ -5,4 +5,4 @@ void main() {
 float d = max(0,
 dot( normalize(vNormal.xyz),
 vec3(0,1,0) ) );
-FragColor = vec4(1,0,1,1); }
+FragColor = vec4(.5,0,1,1); }

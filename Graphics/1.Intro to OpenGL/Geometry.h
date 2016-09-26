@@ -1,5 +1,4 @@
 #pragma once
-
 #include "BaseApplication.h"
 
 
@@ -24,6 +23,7 @@ public:
 	std::vector<glm::vec4> makeHalfCircle(int, float);
 	bool generateSphere();
 	std::vector<unsigned int> GenerateIndices(int, int);
+	bool TextureLoad(char*);
 	virtual bool startup();
 	virtual void shutdown();
 
@@ -45,4 +45,5 @@ private:
 	unsigned int m_VBO;
 	unsigned int m_IBO;
 	unsigned int m_programID;
+	unsigned int m_texture;
 };
