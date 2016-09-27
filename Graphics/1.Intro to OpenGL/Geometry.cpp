@@ -49,11 +49,25 @@ bool Geometry::generateGrid()
 	//Vertices[3].color = vec4(1, 1, 1, 1);
 	// create and bind buffers to a vertex array object
 
+	struct vertex {
+		float x, y, z, w;
+		float nx, ny, nz, nw;
+		float tx, ty, tz, tw;
+		float s, t;
+	};
+	//vertex vertexData[] = {
+	//	{ -5, 0, 5, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1 },
+	//	{ 5, 0, 5, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1 },
+	//	{ 5, 0, -5, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0 },
+	//	{ -5, 0, -5, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0 },
+	//};
+
 	float vertexData[] = {
-		-5, 0, 5, 1, 0, 1,
-		5, 0, 5, 1, 1, 1,
-		5, 0, -5, 1, 1, 0,
-		-5, 0, -5, 1, 0, 0,};
+		-20, 0, 20, 1, 0, 1,
+		20, 0, 20, 1, 1, 1,
+		20, 0, -20, 1, 1, 0,
+		-20, 0, -20, 1, 0, 0,};
+
 	unsigned int indexData[] = {
 		0, 1, 2,
 		0, 2, 3,};
@@ -74,6 +88,13 @@ bool Geometry::generateGrid()
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 6, ((char*)0)+16);
 
+	//glEnableVertexAttribArray(2);
+	//glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE,
+	//	sizeof(vertex), ((char*)0) + 16);
+
+	//glEnableVertexAttribArray(3);
+	//glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE,
+	//	sizeof(vertex), ((char*)0) + 32);
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -84,26 +105,12 @@ bool Geometry::generateGrid()
 bool Geometry::createShader()
 {
 	txtfilereader sourceData = txtfilereader();
-	// create shader
-	const char* vsSource = "#version 410\n \
-							layout(location=0) in vec4 Position; \
-							layout(location=1) in vec2 TexCoord; \
-							out vec2 vTexCoord; \
-							uniform mat4 ProjectionView; \
-							void main() { \
-							vTexCoord = TexCoord; \
-							gl_Position= ProjectionView * Position;\}";
-	const char* fsSource = "#version 410\n \
-							in vec2 vTexCoord; \
-							out vec4 FragColor; \
-							uniform sampler2D diffuse; \
-							void main() { \
-							FragColor = texture(diffuse,vTexCoord);\}";
 
-	//std::string stringvsSource = sourceData.loadFile("vsSource.txt");
-	//const char* vsSource = stringvsSource.c_str();
-	//std::string stringfsSource = sourceData.loadFile("fsSource.txt");
-	//const char* fsSource = stringfsSource.c_str();
+	std::string stringvsSource = sourceData.loadFile("vsSource2D.txt");
+	const char* vsSource = stringvsSource.c_str();
+
+	std::string stringfsSource = sourceData.loadFile("fsSource2D.txt");
+	const char* fsSource = stringfsSource.c_str();
 
 	int success = GL_FALSE;
 	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -237,7 +244,36 @@ bool Geometry::generateSphere()
 	return true;
 }
 
-bool Geometry::TextureLoad(char* filename)
+bool Geometry::TextureLoad3D(char* filename, char* filename2)
+{
+	int imageWidth = 0, imageHeight = 0, imageFormat = 0;
+
+	unsigned char* data = stbi_load(filename2, &imageWidth, &imageHeight, &imageFormat, STBI_default);
+
+	glGenTextures(1, &m_texture);
+	glBindTexture(GL_TEXTURE_2D, m_texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight,
+		0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	stbi_image_free(data);
+
+	data = stbi_load(filename, &imageWidth, &imageHeight, &imageFormat, STBI_default);
+
+	glGenTextures(1, &m_normal);
+	glBindTexture(GL_TEXTURE_2D, m_normal);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight,
+		0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	stbi_image_free(data);
+
+	return true;
+}
+
+bool Geometry::TextureLoadA(char* filename)
 {
 	int imageWidth = 0, imageHeight = 0, imageFormat = 0;
 
@@ -247,8 +283,33 @@ bool Geometry::TextureLoad(char* filename)
 	glBindTexture(GL_TEXTURE_2D, m_texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight,
 		0, GL_RGB, GL_UNSIGNED_BYTE, data);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);	stbi_image_free(data);	return true;
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	float color[] = { 1.0f, 0.0f, 0.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
+
+
+	stbi_image_free(data);
+
+	return true;
+}
+
+bool Geometry::TextureLoadB(char* filename)
+{
+	int imageWidth = 0, imageHeight = 0, imageFormat = 0;
+
+	unsigned char* data = stbi_load(filename, &imageWidth, &imageHeight, &imageFormat, STBI_default);
+
+	glGenTextures(1, &m_texture);
+	glBindTexture(GL_TEXTURE_2D, m_texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageWidth, imageHeight,
+		0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	stbi_image_free(data);
+
+	return true;
 }
 
 bool Geometry::startup() {
@@ -263,17 +324,9 @@ bool Geometry::startup() {
 	m_camera = new Camera(glm::pi<float>() * 0.25f, 16 / 9.f, 0.1f, 1000.f);
 	m_camera->setLookAtFrom(vec3(10, 10, 10), vec3(0));
 
-	TextureLoad("./dep/stb-master/data/textures/lightening.png");
-
-	//int imageWidth = 0, imageHeight = 0, imageFormat = 0;
-
-	//unsigned char* data = stbi_load("./dep/stb-master/data/textures/crate.png", &imageWidth, &imageHeight, &imageFormat, STBI_default);
-	//glGenTextures(1, &m_texture);
-	//glBindTexture(GL_TEXTURE_2D, m_texture);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight,
-	//	0, GL_RGB, GL_UNSIGNED_BYTE, data);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);	//stbi_image_free(data);	//return 1;
+	TextureLoadA("./textures/crate.png");
+	//TextureLoadB("./textures/star.png");
+	//TextureLoad3D("./textures/four_normal.tga","./textures/four_diffuse.tga");
 
 	generateGrid();
 	//generateSphere();
@@ -325,13 +378,25 @@ void Geometry::draw() {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_texture);
 
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, m_normal);
+
+	//matUniform = glGetUniformLocation(m_programID, "diffuse");
+	//glUniform1i(matUniform, 0);
+	//matUniform = glGetUniformLocation(m_programID, "normal");
+	//glUniform1i(matUniform, 1);
+	//
+	//vec3 light(sin(glfwGetTime()), 1, cos(glfwGetTime()));
+	//matUniform = glGetUniformLocation(m_programID, "LightDir");
 	matUniform = glGetUniformLocation(m_programID, "diffuse");
+	//glUniform3f(matUniform, light.x, light.y, light.z);
 	glUniform1i(matUniform, 0);
+
 	// draw quad
 	glBindVertexArray(m_VAO);
 	//glEnable(GL_PRIMITIVE_RESTART);
 	//glPrimitiveRestartIndex(0xFFFF);
-	glPointSize(5.f);
+	//glPointSize(5.f);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
 }

@@ -23,7 +23,9 @@ public:
 	std::vector<glm::vec4> makeHalfCircle(int, float);
 	bool generateSphere();
 	std::vector<unsigned int> GenerateIndices(int, int);
-	bool TextureLoad(char*);
+	bool TextureLoadA(char*);
+	bool TextureLoadB(char*);
+	bool TextureLoad3D(char*, char*);
 	virtual bool startup();
 	virtual void shutdown();
 
@@ -45,5 +47,6 @@ private:
 	unsigned int m_VBO;
 	unsigned int m_IBO;
 	unsigned int m_programID;
-	unsigned int m_texture;
+	unsigned int m_texture, m_normal;
+
 };
