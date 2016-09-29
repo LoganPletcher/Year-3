@@ -54,7 +54,8 @@ bool Geometry::generateGrid()
 		float nx, ny, nz, nw;
 		float tx, ty, tz, tw;
 		float s, t;
-	};
+	};
+
 	//vertex vertexData[] = {
 	//	{ -5, 0, 5, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1 },
 	//	{ 5, 0, 5, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1 },
@@ -63,10 +64,10 @@ bool Geometry::generateGrid()
 	//};
 
 	float vertexData[] = {
-		-20, 0, 20, 1, 0, 1,
-		20, 0, 20, 1, 1, 1,
-		20, 0, -20, 1, 1, 0,
-		-20, 0, -20, 1, 0, 0,};
+		-5, 0, 5, 1, 0, 1,
+		5, 0, 5, 1, 1, 1,
+		5, 0, -5, 1, 1, 0,
+		-5, 0, -5, 1, 0, 0,};
 
 	unsigned int indexData[] = {
 		0, 1, 2,
@@ -94,7 +95,8 @@ bool Geometry::generateGrid()
 
 	//glEnableVertexAttribArray(3);
 	//glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE,
-	//	sizeof(vertex), ((char*)0) + 32);
+	//	sizeof(vertex), ((char*)0) + 32);
+
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -109,7 +111,7 @@ bool Geometry::createShader()
 	std::string stringvsSource = sourceData.loadFile("vsSource2D.txt");
 	const char* vsSource = stringvsSource.c_str();
 
-	std::string stringfsSource = sourceData.loadFile("fsSource2D.txt");
+	std::string stringfsSource = sourceData.loadFile("fsSourceMulti.txt");
 	const char* fsSource = stringfsSource.c_str();
 
 	int success = GL_FALSE;
@@ -250,8 +252,8 @@ bool Geometry::TextureLoad3D(char* filename, char* filename2)
 
 	unsigned char* data = stbi_load(filename2, &imageWidth, &imageHeight, &imageFormat, STBI_default);
 
-	glGenTextures(1, &m_texture);
-	glBindTexture(GL_TEXTURE_2D, m_texture);
+	glGenTextures(1, &m_texture[0]);
+	glBindTexture(GL_TEXTURE_2D, m_texture[0]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight,
 		0, GL_RGB, GL_UNSIGNED_BYTE, data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -273,14 +275,14 @@ bool Geometry::TextureLoad3D(char* filename, char* filename2)
 	return true;
 }
 
-bool Geometry::TextureLoadA(char* filename)
+bool Geometry::TextureLoadA(char* filename, int i)
 {
 	int imageWidth = 0, imageHeight = 0, imageFormat = 0;
 
 	unsigned char* data = stbi_load(filename, &imageWidth, &imageHeight, &imageFormat, STBI_default);
 
-	glGenTextures(1, &m_texture);
-	glBindTexture(GL_TEXTURE_2D, m_texture);
+	glGenTextures(1, &m_texture[i]);
+	glBindTexture(GL_TEXTURE_2D, m_texture[i]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight,
 		0, GL_RGB, GL_UNSIGNED_BYTE, data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -294,14 +296,14 @@ bool Geometry::TextureLoadA(char* filename)
 	return true;
 }
 
-bool Geometry::TextureLoadB(char* filename)
+bool Geometry::TextureLoadB(char* filename, int i)
 {
 	int imageWidth = 0, imageHeight = 0, imageFormat = 0;
 
 	unsigned char* data = stbi_load(filename, &imageWidth, &imageHeight, &imageFormat, STBI_default);
 
-	glGenTextures(1, &m_texture);
-	glBindTexture(GL_TEXTURE_2D, m_texture);
+	glGenTextures(1, &m_texture[i]);
+	glBindTexture(GL_TEXTURE_2D, m_texture[i]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageWidth, imageHeight,
 		0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -324,7 +326,9 @@ bool Geometry::startup() {
 	m_camera = new Camera(glm::pi<float>() * 0.25f, 16 / 9.f, 0.1f, 1000.f);
 	m_camera->setLookAtFrom(vec3(10, 10, 10), vec3(0));
 
-	TextureLoadA("./textures/crate.png");
+	TextureLoadB("./textures/23R35K1.png", 0);
+	TextureLoadB("./textures/star.png", 1);
+	TextureLoadB("./textures/lightening.png", 2);
 	//TextureLoadB("./textures/star.png");
 	//TextureLoad3D("./textures/four_normal.tga","./textures/four_diffuse.tga");
 
@@ -375,11 +379,15 @@ void Geometry::draw() {
 	glUniformMatrix4fv(matUniform, 1, GL_FALSE, &(m_camera->getProjectionView()[0][0]));
 
 	// set texture slot
+	
+	glBindTexture(GL_TEXTURE_2D, m_texture[0]);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, m_texture);
 
+	glBindTexture(GL_TEXTURE_2D, m_texture[1]);
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, m_normal);
+	
+	glBindTexture(GL_TEXTURE_2D, m_texture[2]);
+	glActiveTexture(GL_TEXTURE2);
 
 	//matUniform = glGetUniformLocation(m_programID, "diffuse");
 	//glUniform1i(matUniform, 0);
@@ -388,9 +396,15 @@ void Geometry::draw() {
 	//
 	//vec3 light(sin(glfwGetTime()), 1, cos(glfwGetTime()));
 	//matUniform = glGetUniformLocation(m_programID, "LightDir");
+	
 	matUniform = glGetUniformLocation(m_programID, "diffuse");
-	//glUniform3f(matUniform, light.x, light.y, light.z);
 	glUniform1i(matUniform, 0);
+	matUniform = glGetUniformLocation(m_programID, "diffuse2");
+	glUniform1i(matUniform, 1);
+	matUniform = glGetUniformLocation(m_programID, "diffuse3");
+	glUniform1i(matUniform, 2);
+
+	//glUniform3f(matUniform, light.x, light.y, light.z);
 
 	// draw quad
 	glBindVertexArray(m_VAO);
