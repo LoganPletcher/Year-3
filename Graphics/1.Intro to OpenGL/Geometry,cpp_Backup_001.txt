@@ -19,7 +19,6 @@
 //	V___________:|          |: |========================|    :|          |:   _-"
 //	 V__________: \        / :_|=======================/_____: \        / :__-"
 //	 -----------'  ""____""  `-------------------------------'  ""____""
-using glm::vec2;
 using glm::vec3;
 using glm::vec4;
 using glm::mat4;
@@ -36,68 +35,67 @@ Geometry::~Geometry()
 
 bool Geometry::generateGrid()
 {
-	int dims = 64;
-	float *perlin_data = new float[dims * dims];
-	float scale = (1.0f / dims) * 3;
-	int octaves = 6;
-	for (int x = 0; x < 64; ++x)
-	{
-		for (int y = 0; y < 64; ++y)
-		{
-			float amplitude = 1.f;
-			float persistence = 0.3f;
-			perlin_data[y * dims + x] = 0;
-			for (int o = 0; o < octaves; ++o)
-			{
-				float freq = powf(2, (float)o);
-				float perlin_sample =
-					glm::perlin(vec2((float)x, (float)y) * scale * freq) * 0.5f + 0.5f;
-				perlin_data[y * dims + x] += perlin_sample * amplitude;
-				amplitude *= persistence;
-			}
-		}
-	}
-	int l = 0;
-	//vertex *vertexData = new vertex[dims * dims];
-	//for (float i = 0; i < 64; i++)
-	//{
-	//	for (float j = 0; j < 64; j++)
-	//	{ 
-	//		vertexData[l] = { i, 0, j, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1 };
-	//	}
-	//	l++;
-	//}
-	vertex vertexData[] = { { -5, 0, 5, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1 }, 
-							{ 5, 0, 5, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1 },
-							{ 5, 0, -5, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0 },
-							{ -5, 0, -5, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0 } };
+	//Vertex Vertices[4];
+	//unsigned int Indices[4] = { 0,2,1,3 };
+
+	//Vertices[0].position = vec4(-5, 0, -5, 1);
+	//Vertices[1].position = vec4(5, 0, -5, 1);
+	//Vertices[2].position = vec4(-5, 0, 5, 1);
+	//Vertices[3].position = vec4(5, 0, 5, 1);
+
+	//Vertices[0].color = vec4(1, 0, 0, 1);
+	//Vertices[1].color = vec4(0, 1, 0, 1);
+	//Vertices[2].color = vec4(0, 0, 1, 1);
+	//Vertices[3].color = vec4(1, 1, 1, 1);
+	// create and bind buffers to a vertex array object
+
+	struct vertex {
+		float x, y, z, w;
+		float nx, ny, nz, nw;
+		float tx, ty, tz, tw;
+		float s, t;
+	};
+
+	//vertex vertexData[] = {
+	//	{ -5, 0, 5, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1 },
+	//	{ 5, 0, 5, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1 },
+	//	{ 5, 0, -5, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0 },
+	//	{ -5, 0, -5, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0 },
+	//};
+
+	float vertexData[] = {
+		-5, 0, 5, 1, 0, 1,
+		5, 0, 5, 1, 1, 1,
+		5, 0, -5, 1, 1, 0,
+		-5, 0, -5, 1, 0, 0,};
 
 	unsigned int indexData[] = {
-	0,1,2, 2,3,0};
-
-	glGenTextures(1, &m_perlin_texture);
-	glBindTexture(GL_TEXTURE_2D, m_perlin_texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, 64, 64, 0, GL_RED, GL_FLOAT, perlin_data);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		0, 1, 2,
+		0, 2, 3,};
 
 	glGenVertexArrays(1, &m_VAO);
 	glBindVertexArray(m_VAO);
 
 	glGenBuffers(1, &m_VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex)* 4, vertexData, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, vertexData, GL_STATIC_DRAW);
 
 	glGenBuffers(1, &m_IBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * 6, indexData, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(vertex), 0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(vertex), ((void*)0));
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 6, ((char*)0)+16);
+
+	//glEnableVertexAttribArray(2);
+	//glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE,
+	//	sizeof(vertex), ((char*)0) + 16);
+
+	//glEnableVertexAttribArray(3);
+	//glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE,
+	//	sizeof(vertex), ((char*)0) + 32);
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -110,10 +108,10 @@ bool Geometry::createShader()
 {
 	txtfilereader sourceData = txtfilereader();
 
-	std::string stringvsSource = sourceData.loadFile("vsSourcePerlin.txt");
+	std::string stringvsSource = sourceData.loadFile("vsSource2D.txt");
 	const char* vsSource = stringvsSource.c_str();
 
-	std::string stringfsSource = sourceData.loadFile("fsSourcePerlin.txt");
+	std::string stringfsSource = sourceData.loadFile("fsSourceMulti.txt");
 	const char* fsSource = stringfsSource.c_str();
 
 	int success = GL_FALSE;
@@ -321,11 +319,21 @@ bool Geometry::startup() {
 	// create a basic window
 	createWindow("AIE OpenGL Application", 1080, 720);
 
+	// start the gizmo system that can draw basic immediate-mode shapes
+	//Gizmos::create();
+
 	// setup camera// setup camera
 	m_camera = new Camera(glm::pi<float>() * 0.25f, 16 / 9.f, 0.1f, 1000.f);
 	m_camera->setLookAtFrom(vec3(10, 10, 10), vec3(0));
 
+	TextureLoadB("./textures/23R35K1.png", 0);
+	TextureLoadB("./textures/star.png", 1);
+	TextureLoadB("./textures/lightening.png", 2);
+	//TextureLoadB("./textures/star.png");
+	//TextureLoad3D("./textures/four_normal.tga","./textures/four_diffuse.tga");
+
 	generateGrid();
+	//generateSphere();
 	createShader();
 	// set input callback
 	setInputCallback(inputCallback);
@@ -365,16 +373,44 @@ void Geometry::draw() {
 	glUseProgram(m_programID);
 
 	// where to send the matrix
-	int matUniform = glGetUniformLocation(m_programID, "view_proj");
+	int matUniform = glGetUniformLocation(m_programID, "ProjectionView");
 
 	// send the matrix
 	glUniformMatrix4fv(matUniform, 1, GL_FALSE, &(m_camera->getProjectionView()[0][0]));
-	/*int matUniform2 = glGetUniformLocation(m_programID, "perlin_texture");
-	glUniform1i(matUniform2, 0);*/
+
+	// set texture slot
+	
+	glBindTexture(GL_TEXTURE_2D, m_texture[0]);
+	glActiveTexture(GL_TEXTURE0);
+
+	glBindTexture(GL_TEXTURE_2D, m_texture[1]);
+	glActiveTexture(GL_TEXTURE1);
+	
+	glBindTexture(GL_TEXTURE_2D, m_texture[2]);
+	glActiveTexture(GL_TEXTURE2);
+
+	//matUniform = glGetUniformLocation(m_programID, "diffuse");
+	//glUniform1i(matUniform, 0);
+	//matUniform = glGetUniformLocation(m_programID, "normal");
+	//glUniform1i(matUniform, 1);
+	//
+	//vec3 light(sin(glfwGetTime()), 1, cos(glfwGetTime()));
+	//matUniform = glGetUniformLocation(m_programID, "LightDir");
+	
+	matUniform = glGetUniformLocation(m_programID, "diffuse");
+	glUniform1i(matUniform, 0);
+	matUniform = glGetUniformLocation(m_programID, "diffuse2");
+	glUniform1i(matUniform, 1);
+	matUniform = glGetUniformLocation(m_programID, "diffuse3");
+	glUniform1i(matUniform, 2);
+
+	//glUniform3f(matUniform, light.x, light.y, light.z);
 
 	// draw quad
 	glBindVertexArray(m_VAO);
-	glPointSize(5.0f);
+	//glEnable(GL_PRIMITIVE_RESTART);
+	//glPrimitiveRestartIndex(0xFFFF);
+	//glPointSize(5.f);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
 }

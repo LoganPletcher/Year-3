@@ -2,10 +2,10 @@
 in vec2 vTexCoord;
 out vec4 FragColor;
 uniform sampler2D diffuse;
-uniform sampler2D diffuse2;
-uniform sampler2D diffuse3;
+//uniform sampler2D diffuse2;
+//uniform sampler2D diffuse3;
 void main() {
 vec4 a = texture(diffuse,vTexCoord);
-vec4 b = texture(diffuse2,vTexCoord);
-vec4 c = texture(diffuse3,vTexCoord);
-FragColor = .5 * (a + b + c);}
+//vec4 b = texture(diffuse2,vTexCoord);
+//vec4 c = texture(diffuse3,vTexCoord);
+FragColor = (a);} //+ b + c);}

@@ -15,6 +15,12 @@ public:
 		glm::vec4 position;
 		glm::vec4 color;
 	};
+	struct vertex {
+		float x, y, z, w;
+		float nx, ny, nz, nw;
+		float tx, ty, tz, tw;
+		float s, t;
+	};
 	Geometry();
 	~Geometry();
 	bool generateGrid();
@@ -23,9 +29,10 @@ public:
 	std::vector<glm::vec4> makeHalfCircle(int, float);
 	bool generateSphere();
 	std::vector<unsigned int> GenerateIndices(int, int);
+	bool TextureLoad3D(char*, char*);
 	bool TextureLoadA(char*, int);
 	bool TextureLoadB(char*, int);
-	bool TextureLoad3D(char*, char*);
+	bool PerlinTexture(char*, int, float*);
 	virtual bool startup();
 	virtual void shutdown();
 
@@ -47,6 +54,6 @@ private:
 	unsigned int m_VBO;
 	unsigned int m_IBO;
 	unsigned int m_programID;
-	unsigned int m_texture[10], m_normal;
+	unsigned int m_texture[10], m_normal, m_perlin_texture;
 
 };

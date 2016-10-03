@@ -61,5 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="fsSourceMulti.txt" />
+    <Text Include="fsSourcePerlin.txt" />
+    <Text Include="vsSourcePerlin.txt" />
   </ItemGroup>
 </Project>

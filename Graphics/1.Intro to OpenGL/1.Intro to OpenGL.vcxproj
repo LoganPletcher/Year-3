@@ -154,6 +154,8 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="fsSourceMulti.txt" />
+    <Text Include="fsSourcePerlin.txt" />
+    <Text Include="vsSourcePerlin.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
