@@ -2,9 +2,9 @@
 #include <stb_image.h>
 #include "Geometry.h"
 #include "gl_core_4_4.h"
-
+#include <iostream>
 #include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
+//#include <glm/glm.hpp>
 #include <glm/ext.hpp>
 
 #include "Camera.h"
@@ -36,6 +36,38 @@ Geometry::~Geometry()
 
 bool Geometry::generateGrid()
 {
+	int rows = 64, cols = 64;
+	Vertex* vertices = new Vertex[rows * cols];
+	for (int r = 0; r < rows; ++r) {
+		for (int c = 0; c < cols; ++c) {
+			// offset position so that the terrain is centered
+			vertices[r * cols + c].position = vec4((c - cols) * 0.5f, 0, (r - rows) * 0.5f, 1);
+			/*if ((r * cols + c)%2==0)
+			{
+				vertices[r * cols + c].position.y = 1;
+			}*/
+			// setting up UVs
+			vertices[r * cols + c].texCoord = vec2(c * (1.f / cols), r * (1.f / rows));
+		}
+	}
+	// keep track of number of indices for rendering
+
+	m_indexCount = (rows - 1) * (cols - 1) * 6;
+	unsigned int* indices = new unsigned int[m_indexCount];
+	unsigned int index = 0;
+	for (int r = 0; r < (rows - 1); ++r) {
+		for (int c = 0; c < (cols - 1); ++c) {
+			// triangle 1
+			indices[index++] = r * cols + c;
+			indices[index++] = (r + 1) * cols + c;
+			indices[index++] = (r + 1) * cols + (c + 1);
+			// triangle 2
+			indices[index++] = r * cols + c;
+			indices[index++] = (r + 1) * cols + (c + 1);
+			indices[index++] = r * cols + (c + 1);
+		}
+	}
+
 	int dims = 64;
 	float *perlin_data = new float[dims * dims];
 	float scale = (1.0f / dims) * 3;
@@ -57,23 +89,6 @@ bool Geometry::generateGrid()
 			}
 		}
 	}
-	int l = 0;
-	//vertex *vertexData = new vertex[dims * dims];
-	//for (float i = 0; i < 64; i++)
-	//{
-	//	for (float j = 0; j < 64; j++)
-	//	{ 
-	//		vertexData[l] = { i, 0, j, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1 };
-	//	}
-	//	l++;
-	//}
-	vertex vertexData[] = { { -5, 0, 5, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1 }, 
-							{ 5, 0, 5, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1 },
-							{ 5, 0, -5, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0 },
-							{ -5, 0, -5, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0 } };
-
-	unsigned int indexData[] = {
-	0,1,2, 2,3,0};
 
 	glGenTextures(1, &m_perlin_texture);
 	glBindTexture(GL_TEXTURE_2D, m_perlin_texture);
@@ -88,16 +103,16 @@ bool Geometry::generateGrid()
 
 	glGenBuffers(1, &m_VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex)* 4, vertexData, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex)* cols * rows, vertices, GL_STATIC_DRAW);
 
 	glGenBuffers(1, &m_IBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * 6, indexData, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * m_indexCount, indices, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(vertex), 0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(vertex), ((void*)0));
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), ((void*)0));
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -369,13 +384,17 @@ void Geometry::draw() {
 
 	// send the matrix
 	glUniformMatrix4fv(matUniform, 1, GL_FALSE, &(m_camera->getProjectionView()[0][0]));
-	/*int matUniform2 = glGetUniformLocation(m_programID, "perlin_texture");
-	glUniform1i(matUniform2, 0);*/
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_perlin_texture);
+
+	matUniform = glGetUniformLocation(m_programID, "perlin_texture");
+	glUniform1i(matUniform, 0);
 
 	// draw quad
 	glBindVertexArray(m_VAO);
 	glPointSize(5.0f);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+	glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, nullptr);
 
 }
 

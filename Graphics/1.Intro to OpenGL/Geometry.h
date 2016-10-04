@@ -3,6 +3,7 @@
 
 
 #include <glm/vec4.hpp>
+#include <glm/vec2.hpp>
 #include <vector>
 
 class Camera;
@@ -13,6 +14,7 @@ public:
 	struct Vertex
 	{
 		glm::vec4 position;
+		glm::vec2 texCoord;
 		glm::vec4 color;
 	};
 	struct vertex {
@@ -55,5 +57,6 @@ private:
 	unsigned int m_IBO;
 	unsigned int m_programID;
 	unsigned int m_texture[10], m_normal, m_perlin_texture;
+	unsigned int m_indexCount;
 
 };
