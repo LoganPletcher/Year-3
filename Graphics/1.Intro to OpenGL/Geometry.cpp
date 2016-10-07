@@ -89,6 +89,12 @@ bool Geometry::generateGrid()
 			}
 		}
 	}
+	
+	for (int i = 0; i < cols * rows; i++)
+	{
+
+		vertices[i].position.y = perlin_data[i];
+	}
 
 	glGenTextures(1, &m_perlin_texture);
 	glBindTexture(GL_TEXTURE_2D, m_perlin_texture);
